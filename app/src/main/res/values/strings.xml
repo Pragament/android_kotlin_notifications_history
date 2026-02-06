@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">Notifications History</string>
+    <string name="notifications_tab">Notifications</string>
+    <string name="settings_tab">Settings</string>
+    <string name="filter">Filter</string>
+    <string name="clear_all">Clear All</string>
+    <string name="mark_all_read">Mark All Read</string>
+    <string name="mark_read">Mark as Read</string>
+    <string name="mark_unread">Mark as Unread</string>
+    <string name="snooze">Snooze</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    
+    <!-- Filter strings -->
+    <string name="filter_by_app">Filter by App</string>
+    <string name="filter_by_status">Filter by Status</string>
+    <string name="filter_by_date">Filter by Date</string>
+    <string name="all_apps">All Apps</string>
+    <string name="all_status">All</string>
+    <string name="read_only">Read Only</string>
+    <string name="unread_only">Unread Only</string>
+    <string name="snoozed_only">Snoozed Only</string>
+    <string name="apply_filter">Apply Filter</string>
+    <string name="reset_filter">Reset</string>
+    
+    <!-- Snooze strings -->
+    <string name="snooze_for">Snooze for</string>
+    <string name="snooze_15_minutes">15 minutes</string>
+    <string name="snooze_1_hour">1 hour</string>
+    <string name="snooze_3_hours">3 hours</string>
+    <string name="snooze_tomorrow">Tomorrow morning</string>
+    <string name="snooze_custom">Custom time</string>
+    
+    <!-- Settings strings -->
+    <string name="notification_access">Notification Access</string>
+    <string name="notification_access_desc">Grant permission to capture notifications</string>
+    <string name="notification_access_enabled">Notification access is enabled</string>
+    <string name="notification_access_disabled">Tap to enable notification access</string>
+    <string name="enable_permission">Enable Permission</string>
+    <string name="excluded_apps">Excluded Apps</string>
+    <string name="excluded_apps_desc">Notifications from these apps won\'t be saved</string>
+    <string name="auto_delete">Auto Delete</string>
+    <string name="auto_delete_desc">Automatically delete notifications older than</string>
+    <string name="never">Never</string>
+    <string name="days_7">7 days</string>
+    <string name="days_30">30 days</string>
+    <string name="days_90">90 days</string>
+    <string name="theme">Theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    
+    <!-- Empty states -->
+    <string name="no_notifications">No notifications yet</string>
+    <string name="no_notifications_desc">Notifications will appear here once they arrive</string>
+    <string name="no_filtered_notifications">No matching notifications</string>
+    <string name="no_filtered_notifications_desc">Try adjusting your filters</string>
+    
+    <!-- Time formats -->
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="just_now">Just now</string>
+    <string name="minutes_ago">%d minutes ago</string>
+    <string name="hours_ago">%d hours ago</string>
+</resources>
