@@ -76,6 +76,12 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
     
+    // OkHttp for network calls
+    implementation(libs.okhttp)
+    
+    // Gson for JSON
+    implementation(libs.gson)
+    
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

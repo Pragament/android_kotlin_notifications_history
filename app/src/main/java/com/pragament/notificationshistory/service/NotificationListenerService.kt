@@ -9,7 +9,11 @@ import android.graphics.drawable.Drawable
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Base64
+import android.util.Log
 import com.pragament.notificationshistory.data.entity.NotificationEntity
+import com.pragament.notificationshistory.data.preference.SupabasePrefs
+import com.pragament.notificationshistory.data.remote.SupabaseManager
+import com.pragament.notificationshistory.data.remote.SupabaseRealtimeClient
 import com.pragament.notificationshistory.data.repository.NotificationRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +29,33 @@ class NotificationListenerService : NotificationListenerService() {
     @Inject
     lateinit var repository: NotificationRepository
 
+    @Inject
+    lateinit var supabasePrefs: SupabasePrefs
+
+    @Inject
+    lateinit var supabaseManager: SupabaseManager
+
+    @Inject
+    lateinit var realtimeClient: SupabaseRealtimeClient
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    // Cache forwarding rules to avoid fetching on every notification
+    private var cachedRules: List<SupabaseManager.ForwardRule> = emptyList()
+    private var lastRuleFetchTime: Long = 0
+    private val ruleCacheTtlMs = 60_000L // Refresh rules every 60 seconds
+
+    companion object {
+        private const val TAG = "NotifListenerSvc"
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        // Connect to Supabase Realtime if sync is enabled
+        if (supabasePrefs.syncEnabled && supabasePrefs.isLinked) {
+            realtimeClient.connect()
+        }
+    }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn?.let { statusBarNotification ->
@@ -58,6 +88,17 @@ class NotificationListenerService : NotificationListenerService() {
 
             serviceScope.launch {
                 repository.insertNotification(notificationEntity)
+
+                // Check if we should forward this notification
+                if (supabasePrefs.syncEnabled && supabasePrefs.isLinked && supabasePrefs.isConfigured) {
+                    checkAndForwardNotification(
+                        packageName = statusBarNotification.packageName,
+                        appName = appName,
+                        title = title,
+                        content = content,
+                        timestamp = statusBarNotification.postTime
+                    )
+                }
             }
         }
     }
@@ -65,6 +106,54 @@ class NotificationListenerService : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         // Optionally handle notification removal
         // We keep the history even after notification is dismissed
+    }
+
+    /**
+     * Checks forwarding rules and forwards the notification if it matches any rule.
+     */
+    private suspend fun checkAndForwardNotification(
+        packageName: String,
+        appName: String,
+        title: String?,
+        content: String?,
+        timestamp: Long
+    ) {
+        try {
+            // Refresh cached rules if needed
+            val now = System.currentTimeMillis()
+            if (now - lastRuleFetchTime > ruleCacheTtlMs) {
+                cachedRules = supabaseManager.getForwardRulesSync()
+                lastRuleFetchTime = now
+            }
+
+            if (cachedRules.isEmpty()) return
+
+            // Check if any rule matches this notification
+            val matches = cachedRules.any { rule ->
+                val appMatch = rule.app_source.isNullOrBlank() ||
+                        packageName.contains(rule.app_source, ignoreCase = true) ||
+                        appName.contains(rule.app_source, ignoreCase = true)
+
+                val textMatch = rule.text_contains.isNullOrBlank() ||
+                        (title?.contains(rule.text_contains, ignoreCase = true) == true) ||
+                        (content?.contains(rule.text_contains, ignoreCase = true) == true)
+
+                appMatch && textMatch
+            }
+
+            if (matches) {
+                Log.d(TAG, "Forwarding notification from $appName")
+                supabaseManager.forwardNotification(
+                    packageName = packageName,
+                    appName = appName,
+                    title = title,
+                    content = content,
+                    timestamp = timestamp
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking/forwarding notification", e)
+        }
     }
 
     private fun getAppName(packageName: String): String {
@@ -113,6 +202,7 @@ class NotificationListenerService : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        realtimeClient.disconnect()
         super.onDestroy()
     }
 }
