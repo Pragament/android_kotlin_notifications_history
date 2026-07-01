@@ -1,5 +1,6 @@
 package com.pragament.notificationshistory.data.remote
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.pragament.notificationshistory.data.preference.SupabasePrefs
@@ -39,6 +40,12 @@ class SupabaseManager(
                     "device_name" to prefs.deviceName
                 )
             )
+            
+            Log.d("SupabaseManager", "generateOtp Request URL: $url")
+            Log.d("SupabaseManager", "generateOtp Request Body: $body")
+            Log.d("SupabaseManager", "generateOtp API Key length: ${prefs.supabaseAnonKey.length}")
+            Log.d("SupabaseManager", "generateOtp API Key starts with: ${prefs.supabaseAnonKey.take(15)}...")
+
             val request = Request.Builder()
                 .url(url)
                 .post(body.toRequestBody(jsonMediaType))
@@ -49,6 +56,9 @@ class SupabaseManager(
 
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string() ?: ""
+            
+            Log.d("SupabaseManager", "generateOtp Response Code: ${response.code}")
+            Log.d("SupabaseManager", "generateOtp Response Body: $responseBody")
 
             if (response.isSuccessful) {
                 val otpResponse = gson.fromJson(responseBody, OtpResponse::class.java)
@@ -60,6 +70,7 @@ class SupabaseManager(
                 Result.failure(IOException("Generate OTP failed (${response.code}): $responseBody"))
             }
         } catch (e: Exception) {
+            Log.e("SupabaseManager", "generateOtp Error: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -78,6 +89,11 @@ class SupabaseManager(
                     "device_name" to prefs.deviceName
                 )
             )
+            
+            Log.d("SupabaseManager", "linkDevice Request URL: $url")
+            Log.d("SupabaseManager", "linkDevice Request Body: $body")
+            Log.d("SupabaseManager", "linkDevice API Key length: ${prefs.supabaseAnonKey.length}")
+
             val request = Request.Builder()
                 .url(url)
                 .post(body.toRequestBody(jsonMediaType))
@@ -88,6 +104,9 @@ class SupabaseManager(
 
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string() ?: ""
+            
+            Log.d("SupabaseManager", "linkDevice Response Code: ${response.code}")
+            Log.d("SupabaseManager", "linkDevice Response Body: $responseBody")
 
             if (response.isSuccessful) {
                 val linkResponse = gson.fromJson(responseBody, LinkResponse::class.java)
@@ -98,6 +117,7 @@ class SupabaseManager(
                 Result.failure(IOException("Link device failed (${response.code}): $responseBody"))
             }
         } catch (e: Exception) {
+            Log.e("SupabaseManager", "linkDevice Error: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -125,6 +145,10 @@ class SupabaseManager(
                     "timestamp" to timestamp
                 )
             )
+            
+            Log.d("SupabaseManager", "forwardNotification Request URL: $url")
+            Log.d("SupabaseManager", "forwardNotification API Key length: ${prefs.supabaseAnonKey.length}")
+
             val request = Request.Builder()
                 .url(url)
                 .post(body.toRequestBody(jsonMediaType))
@@ -135,6 +159,9 @@ class SupabaseManager(
 
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string() ?: ""
+            
+            Log.d("SupabaseManager", "forwardNotification Response Code: ${response.code}")
+            Log.d("SupabaseManager", "forwardNotification Response Body: $responseBody")
 
             if (response.isSuccessful) {
                 Result.success(Unit)
@@ -142,6 +169,7 @@ class SupabaseManager(
                 Result.failure(IOException("Forward failed (${response.code}): $responseBody"))
             }
         } catch (e: Exception) {
+            Log.e("SupabaseManager", "forwardNotification Error: ${e.message}", e)
             Result.failure(e)
         }
     }
