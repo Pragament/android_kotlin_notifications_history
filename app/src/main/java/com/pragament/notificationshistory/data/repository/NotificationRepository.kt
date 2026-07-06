@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationRepository @Inject constructor(
-    private val notificationDao: NotificationDao
+    private val  notificationDao: NotificationDao
 ) {
     fun getAllNotifications(): Flow<List<NotificationEntity>> =
         notificationDao.getAllNotifications()
